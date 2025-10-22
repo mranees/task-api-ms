@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\TaskRequest;
+use App\Http\Resources\api\TaskResource;
 use App\Models\Task;
 use Illuminate\Http\Request;
 
@@ -15,7 +16,12 @@ class TaskController extends Controller
     public function index(Request $request)
     {
         $this->authorize('viewAny', Task::class);
-        $tasks = $request->user()->tasks()->latest()->paginate(10);
+        if (!$request->user()->is_admin)
+        {
+            $tasks = TaskResource::collection($request->user()->tasks()->latest()->paginate(5));
+        } else {
+            $tasks = Task::latest()->paginate(5);
+        }
         return response()->json($tasks);
     }
 
